@@ -14,39 +14,51 @@ struct Constants {
     static let APIKey = "7e31fd338a334d03aafda200f55348c0"
     static let basicURL = "https://api.spoonacular.com/recipes/"
     
-    static let popularityURL = "\(basicURL)complexSearch?sort=popularity&number=10&apiKey=\(APIKey)"
-    
-    static let randomURL = "\(basicURL)random?apiKey=\(APIKey)"
-    
     static func exactURL(with id: Int) -> String {
         return "\(basicURL)\(id)/information?apiKey=\(APIKey)"
     }
+    
+    static let popularRecipesURL = "\(basicURL)complexSearch?sort=popularity&number=10&apiKey=\(APIKey)"
+    
+    static let randomURL = "\(basicURL)random?apiKey=\(APIKey)"
     
 }
 
 class APICaller {
     static let shared = APICaller()
     
-    func getExactRecipe (completion: @escaping (Result<Recipe, Error>) -> Void) {
+    func getDetailedRecipe (completion: @escaping (Result<DeatiledRecipe, Error>) -> Void) {
 
       guard let url = URL(string: Constants.exactURL(with: 715467)) else {return}
         print (url)
         let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, responce, error in
             guard let data = data, error == nil else {return}
             do {
-                let results = try JSONDecoder().decode(Recipe.self, from: data)
+                let results = try JSONDecoder().decode(DeatiledRecipe.self, from: data)
                 completion(.success(results))
 
             } catch {
                 completion(.failure(error))
-                print ("supergovno")
+                print ("potracheno")
             }
         }
         task.resume()
     }
     
-    func getComplexRecipe (completion: @escaping (Result<[Recipe], Error>) -> Void) {
+    func getSortedRecipes (completion: @escaping (Result<[Recipe], Error>) -> Void) {
         
+        guard let url = URL(string: Constants.popularRecipesURL) else {return}
+        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, responce, error in
+            guard let data = data, error == nil else {return}
+            do {
+                let results = try JSONDecoder().decode(SortedRecipes.self, from: data)
+                completion(.success(results.recipes)
+            } catch {
+                completion(.failure(error))
+                print ("potracheno")
+            }
+        }
+        task.resume()
     }
     
     func downloadImage(from urlString: String,completion: @escaping (Result<Data, Error>) -> Void) {

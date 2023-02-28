@@ -34,7 +34,7 @@ class ViewController: UIViewController {
     }
     
     private func fetchData() {
-        APICaller.shared.getExactRecipe { results in
+        APICaller.shared.getDetailedRecipe { results in
             switch results {
             case .success(let recipe) : self.updateUI(with: recipe); print(recipe.extendedIngredients)
             case .failure(let error): print (error)
@@ -43,7 +43,7 @@ class ViewController: UIViewController {
 
     }
     
-    func updateUI (with recipe: (Recipe)) {
+    func updateUI (with recipe: (DeatiledRecipe)) {
         DispatchQueue.main.async { [self] in
             if let name = recipe.title {
                 nameLabel.text = "Recipe name: \(name)"
