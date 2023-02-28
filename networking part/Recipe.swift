@@ -7,15 +7,18 @@
 
 import Foundation
 
-struct popularRecipeResponce: Codable {
+struct RecipeResponce: Codable {
     let recipes: [Recipe]
 }
+
 struct Recipe: Codable {
     let id: Int
     let readyInMinutes: Int?
     let title: String?
     let image: String?
     let aggregateLikes: Int?
+    let summary: String?
+    let instructions: String?
     let extendedIngredients: [ExtendedIngredient]
 }
 
@@ -24,6 +27,4 @@ struct ExtendedIngredient: Codable {
     let name: String?
     let amount: Double?
     let unit: String?
-    let summary: String?
-    let instructions: String?
 }

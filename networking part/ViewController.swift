@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Foundation
 
 class ViewController: UIViewController {
     
@@ -16,8 +17,10 @@ class ViewController: UIViewController {
     @IBOutlet weak var descriptionLabel: UILabel!
     
     @IBOutlet weak var recipeImageView: UIImageView!
-
+    
     @IBOutlet weak var processLabel: UILabel!
+    
+    @IBOutlet weak var scrollView: UIScrollView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,26 +34,34 @@ class ViewController: UIViewController {
     }
     
     private func fetchData() {
-        APICaller.shared.getPopularRecipes { results in
+        APICaller.shared.getExactRecipe { results in
             switch results {
-            case .success(let recipes) : self.updateUI(with: recipes); print(recipes[0].extendedIngredients)
+            case .success(let recipe) : self.updateUI(with: recipe); print(recipe.extendedIngredients)
             case .failure(let error): print (error)
+            }
         }
-            
-        }
+
     }
     
-    func updateUI (with recipes: ([Recipe])) {
+    func updateUI (with recipe: (Recipe)) {
         DispatchQueue.main.async { [self] in
-            if let name = recipes[0].title {
+            if let name = recipe.title {
                 nameLabel.text = "Recipe name: \(name)"
             }
-            if let likes = recipes[0].aggregateLikes {
+            if let likes = recipe.aggregateLikes {
                 likesLabel.text = "Likes: \(likes)"
             }
-//            if let descr = recipes[0].
+            if let descr = recipe.summary {
+                guard let safeDescription = convertHTML(from: descr) else {return}
+                descriptionLabel.text = safeDescription.string
+            }
+            if let process = recipe.instructions {
+                guard let safeProcess = convertHTML(from: process) else {return}
+                processLabel.text = safeProcess.string
+                        
+            }
             
-            if let imageURL = recipes[0].image {
+            if let imageURL = recipe.image {
                 APICaller.shared.downloadImage(from: imageURL) { result in
                     switch result {
                     case .success(let imageData):
@@ -58,12 +69,18 @@ class ViewController: UIViewController {
                             self.recipeImageView.image = UIImage(data: imageData)
                         }
                     case .failure(let error): print(error)
-                }
+                    }
                 }
             }
-            
         }
     }
-
+    func convertHTML (from string: String) -> NSAttributedString?{
+        do{
+            let atrString = try NSAttributedString(data: string.data(using: .utf8) ?? .init(), options: [.documentType: NSAttributedString.DocumentType.html], documentAttributes: nil)
+            return atrString
+        }catch{
+            print("Could not convert!")
+            return nil
+        }
+    }
 }
-
