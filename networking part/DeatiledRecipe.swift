@@ -22,5 +22,5 @@ struct ExtendedIngredient: Codable {
     let image: String?
     let name: String?
     let amount: Double?
-    let unit: String?
+    let unit: String? // единицы измерения
 }

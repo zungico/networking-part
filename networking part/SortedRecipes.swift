@@ -8,11 +8,10 @@
 import Foundation
 
 struct SortedRecipes: Codable {
-    let recipes: [Recipe]
+    let results: [Recipe]
 }
 
 struct Recipe: Codable {
     let id : Int
-    let title: String?
-    let image: String?
+
 }

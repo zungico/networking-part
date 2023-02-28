@@ -11,15 +11,10 @@ import Foundation
 class ViewController: UIViewController {
     
     @IBOutlet weak var nameLabel: UILabel!
-    
     @IBOutlet weak var likesLabel: UILabel!
-    
     @IBOutlet weak var descriptionLabel: UILabel!
-    
     @IBOutlet weak var recipeImageView: UIImageView!
-    
     @IBOutlet weak var processLabel: UILabel!
-    
     @IBOutlet weak var scrollView: UIScrollView!
     
     override func viewDidLoad() {
@@ -34,13 +29,19 @@ class ViewController: UIViewController {
     }
     
     private func fetchData() {
-        APICaller.shared.getDetailedRecipe { results in
+        
+        APICaller.shared.getSortedRecipes { results in
             switch results {
-            case .success(let recipe) : self.updateUI(with: recipe); print(recipe.extendedIngredients)
+            case .success(let recipes) :
+                APICaller.shared.getDetailedRecipe(with: recipes[0].id) { results in
+                switch results {
+                case .success(let recipe) : self.updateUI(with: recipe); print(recipe.extendedIngredients)
+                case .failure(let error): print (error)
+                }
+            }
             case .failure(let error): print (error)
             }
         }
-
     }
     
     func updateUI (with recipe: (DeatiledRecipe)) {
@@ -58,11 +59,10 @@ class ViewController: UIViewController {
             if let process = recipe.instructions {
                 guard let safeProcess = convertHTML(from: process) else {return}
                 processLabel.text = safeProcess.string
-                        
             }
             
             if let imageURL = recipe.image {
-                APICaller.shared.downloadImage(from: imageURL) { result in
+                APICaller.shared.getImage(from: imageURL) { result in
                     switch result {
                     case .success(let imageData):
                         DispatchQueue.main.async {
@@ -79,7 +79,7 @@ class ViewController: UIViewController {
             let atrString = try NSAttributedString(data: string.data(using: .utf8) ?? .init(), options: [.documentType: NSAttributedString.DocumentType.html], documentAttributes: nil)
             return atrString
         }catch{
-            print("Could not convert!")
+            print("I cant convert html to string sorry")
             return nil
         }
     }
